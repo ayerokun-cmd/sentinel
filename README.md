@@ -15,7 +15,7 @@ A cross-platform scanner that checks devices for **malware** and **weak security
 Requires Python 3.9+. No other packages are required.
 
 ```bash
-git clone https://github.com/<you>/sentinel.git
+git clone https://github.com/ayerokun-cmd/sentinel.git
 cd sentinel
 pip install -r requirements.txt   # optional: adds YARA rule scanning
 ```
