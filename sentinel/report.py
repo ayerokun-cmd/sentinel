@@ -3,6 +3,7 @@ import datetime as dt
 import html
 import json
 import platform
+import sys
 
 from .findings import sort_findings
 
@@ -32,6 +33,7 @@ def print_report(findings, stats=None, show_ok=True):
     if stats:
         print(f"Files scanned: {stats.get('files_scanned', 0)}, skipped: {stats.get('files_skipped', 0)}, "
               f"signatures loaded: {stats.get('signatures', 0)}, YARA: {'on' if stats.get('yara') else 'off'}")
+    sys.stdout.flush()  # show results immediately, even when output goes to a log file
 
 
 def save_json(findings, stats, path):

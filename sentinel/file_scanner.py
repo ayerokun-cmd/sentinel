@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+from . import content_scanner, url_checks
 from .findings import Finding
 
 DATA_DIR = Path(__file__).parent / "data"
@@ -100,8 +101,10 @@ def iter_files(roots):
                 yield Path(dirpath) / fn
 
 
-def scan_paths(roots, signature_files=None, rules_dir=DEFAULT_RULES, progress=True):
+def scan_paths(roots, signature_files=None, rules_dir=DEFAULT_RULES, progress=True,
+               domain_files=None):
     sigs = load_signatures(signature_files or [DEFAULT_SIGNATURES])
+    bad_domains = url_checks.load_bad_domains(domain_files)
     yara_rules = load_yara(rules_dir)
     findings = []
     stats = {"files_scanned": 0, "files_skipped": 0, "signatures": len(sigs),
@@ -128,6 +131,8 @@ def scan_paths(roots, signature_files=None, rules_dir=DEFAULT_RULES, progress=Tr
                         "malware", f"YARA rule matched: {m.rule}", "high",
                         f"Rule set '{m.namespace}' flagged this file.",
                         "Inspect the file; upload it to VirusTotal for a second opinion.", str(path)))
+            # PHP web shells, emails and links inside web pages
+            findings.extend(content_scanner.scan_file(path, sigs, bad_domains))
             stats["files_scanned"] += 1
             if progress and stats["files_scanned"] % 500 == 0:
                 print(f"  ...{stats['files_scanned']} files scanned", file=sys.stderr)
@@ -136,3 +141,36 @@ def scan_paths(roots, signature_files=None, rules_dir=DEFAULT_RULES, progress=Tr
         except Exception:  # a YARA timeout or odd file must not stop the scan
             stats["files_skipped"] += 1
     return findings, stats
+
+
+def watch(roots, notifier, interval=10, on_findings=None, **scan_kwargs):
+    """Keep checking folders; scan any file that is new or changed and alert straight away."""
+    import time
+
+    def snapshot():
+        snap = {}
+        for p in iter_files(roots):
+            try:
+                snap[p] = p.stat().st_mtime
+            except OSError:
+                pass
+        return snap
+
+    known = snapshot()
+    print(f"Watching {len(known)} files in: {', '.join(map(str, roots))}  (Ctrl+C to stop)",
+          file=sys.stderr)
+    try:
+        while True:
+            time.sleep(interval)
+            current = snapshot()
+            changed = [p for p, m in current.items() if known.get(p) != m]
+            known = current
+            if not changed:
+                continue
+            found, _ = scan_paths(changed, progress=False, **scan_kwargs)
+            if found:
+                if on_findings:
+                    on_findings(found)
+                notifier.send(found, context="real-time watch")
+    except KeyboardInterrupt:
+        print("Stopped watching.", file=sys.stderr)
