@@ -8,6 +8,7 @@ from .findings import Finding
 
 DATA_DIR = Path(__file__).parent / "data"
 DEFAULT_BAD_DOMAINS = DATA_DIR / "bad_domains.txt"
+USER_BAD_DOMAINS = Path.home() / ".sentinel" / "bad_domains.txt"   # updates go here
 
 URL_RE = re.compile(r"""\bhttps?://[^\s<>"'`)\]}]+""", re.I)
 DOMAIN_RE = re.compile(r"\b((?:[a-z0-9-]+\.)+[a-z]{2,})\b", re.I)
@@ -36,7 +37,7 @@ OFFICIAL_DOMAINS = {
 def load_bad_domains(paths=None):
     """One domain per line. Also accepts hosts-file lines like '127.0.0.1 bad.example'."""
     bad = set()
-    for p in paths or [DEFAULT_BAD_DOMAINS]:
+    for p in paths or [DEFAULT_BAD_DOMAINS, USER_BAD_DOMAINS]:
         p = Path(p)
         if not p.exists():
             continue

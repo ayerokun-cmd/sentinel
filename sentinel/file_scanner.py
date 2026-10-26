@@ -10,6 +10,8 @@ from .findings import Finding
 DATA_DIR = Path(__file__).parent / "data"
 DEFAULT_SIGNATURES = DATA_DIR / "signatures.txt"
 DEFAULT_RULES = DATA_DIR / "rules"
+USER_DIR = Path.home() / ".sentinel"          # updates are saved here
+USER_SIGNATURES = USER_DIR / "signatures.txt"
 
 MAX_FILE_BYTES = 200 * 1024 * 1024   # skip files bigger than 200 MB
 CHUNK = 1024 * 1024
@@ -103,7 +105,7 @@ def iter_files(roots):
 
 def scan_paths(roots, signature_files=None, rules_dir=DEFAULT_RULES, progress=True,
                domain_files=None):
-    sigs = load_signatures(signature_files or [DEFAULT_SIGNATURES])
+    sigs = load_signatures(list(signature_files or [DEFAULT_SIGNATURES]) + [USER_SIGNATURES])
     bad_domains = url_checks.load_bad_domains(domain_files)
     yara_rules = load_yara(rules_dir)
     findings = []

@@ -1,6 +1,6 @@
 # Known malicious domains, one per line (hosts-file format also accepted).
 # Import a public list with:  python -m sentinel update --domains <file-or-url>
-# Example source: URLhaus hostfile from abuse.ch (https://urlhaus.abuse.ch/api/#hostfile)
+# Example source: CERT Polska list (https://hole.cert.pl/domains/v2/domains.txt)
 #
 # Test entry (reserved test domain, never a real site):
 malware-test.invalid

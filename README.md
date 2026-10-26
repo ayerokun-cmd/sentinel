@@ -2,6 +2,42 @@
 
 A cross-platform scanner that checks devices for **malware** and **weak security settings**.
 
+## Download (no install needed)
+
+Go to the [Releases page](https://github.com/ayerokun-cmd/sentinel/releases/latest), download the
+file for your computer and double-click it. A simple numbered menu opens, so no commands needed:
+
+```
+  1  Scan this computer (quick)          6  Scan an Android phone (USB)
+  2  Scan this computer (full, slower)   7  Update malware lists
+  3  Real-time protection                8  Set up email alerts
+  4  Check a link                        9  Send a test alert
+  5  Check an email file (.eml)
+```
+
+- **Windows:** `Sentinel-windows.exe`. If you see "Windows protected your PC", click *More info* then *Run anyway*
+  (the program isn't code-signed yet).
+- **Mac:** `Sentinel-macos`. Right-click it and choose *Open* the first time.
+- **Linux:** `Sentinel-linux`. Run `chmod +x Sentinel-linux && ./Sentinel-linux`.
+
+Run option **7** first to download the latest malware lists (about 130,000 malware fingerprints
+and 125,000 scam domains, saved in `~/.sentinel/`).
+
+### Shortcuts for one task
+
+`Sentinel.exe --menu <number>` runs one menu option directly, for example
+`Sentinel.exe --menu 1` for a quick scan. Use it for Desktop shortcuts or scheduled tasks.
+
+### Building the program yourself
+
+```bash
+pip install pyinstaller
+python build.py          # creates dist/Sentinel.exe (or dist/Sentinel on Mac/Linux)
+```
+
+GitHub Actions builds all three versions on every push. To publish a release, push a tag:
+`git tag v0.3.0 && git push --tags`.
+
 | Device | Malware scan | Security settings check |
 |---|---|---|
 | Windows | Files (hash signatures, YARA, disguised extensions), suspicious startup programs | Defender, firewall, UAC, Remote Desktop, SMBv1, BitLocker, Windows Update |
@@ -41,7 +77,7 @@ and edit `~/.sentinel/config.json` (webhook URL, email server, alert level, `"en
 The email password is read from the `SENTINEL_SMTP_PASSWORD` environment variable and never
 stored in the file.
 
-## Install
+## Install from source (for developers)
 
 Requires Python 3.9+. No other packages are required.
 
@@ -86,7 +122,8 @@ python -m sentinel update hashes.txt
 python -m sentinel update https://example.com/sha256-list.txt
 ```
 
-Free sources: [MalwareBazaar](https://bazaar.abuse.ch/export/) hash exports, VirusShare hash lists.
+Free sources that need no account: [malicious-hash](https://github.com/romainmarcoux/malicious-hash) (SHA-256 lists).
+The easiest way is menu option 7 (*Update malware lists*).
 For Android stalkerware package names, see
 [stalkerware-indicators](https://github.com/AssoEchap/stalkerware-indicators) and add them to
 `sentinel/data/android_bad_packages.txt`. Add YARA rules to `sentinel/data/rules/`.
@@ -94,7 +131,7 @@ For Android stalkerware package names, see
 Bad domains for link checks live in `sentinel/data/bad_domains.txt`. Import a public list:
 
 ```bash
-python -m sentinel update --domains https://urlhaus.abuse.ch/downloads/hostfile/
+python -m sentinel update --domains https://hole.cert.pl/domains/v2/domains.txt
 ```
 
 ## Tests

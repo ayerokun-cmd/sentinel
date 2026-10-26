@@ -15,7 +15,8 @@ Settings live in ~/.sentinel/config.json (create it with `python -m sentinel not
   }
 }
 
-The SMTP password is never stored in the file: set the SENTINEL_SMTP_PASSWORD environment variable.
+The SMTP password is never stored in config.json. It comes from the SENTINEL_SMTP_PASSWORD
+environment variable, or ~/.sentinel/smtp_password (written by the menu's email setup).
 """
 import datetime as dt
 import json
@@ -156,6 +157,9 @@ class Notifier:
         cfg = self.email_cfg
         if not cfg or not cfg.get("to"):
             return
+        password = _smtp_password()
+        if cfg.get("username") and not password:
+            return  # email alerts not finished setting up yet (no app password saved)
         msg = EmailMessage()
         msg["Subject"] = title
         msg["From"] = cfg.get("from") or cfg.get("username")
@@ -167,10 +171,19 @@ class Notifier:
         with smtplib.SMTP(cfg["smtp_host"], int(cfg.get("smtp_port", 587)), timeout=30) as s:
             if cfg.get("use_tls", True):
                 s.starttls()
-            password = os.environ.get("SENTINEL_SMTP_PASSWORD")
             if cfg.get("username") and password:
                 s.login(cfg["username"], password)
             s.send_message(msg)
+
+
+def _smtp_password():
+    """From the SENTINEL_SMTP_PASSWORD variable, or the file saved by the menu's email setup."""
+    if os.environ.get("SENTINEL_SMTP_PASSWORD"):
+        return os.environ["SENTINEL_SMTP_PASSWORD"]
+    try:
+        return (CONFIG_DIR / "smtp_password").read_text(encoding="utf-8").strip()
+    except OSError:
+        return ""
 
 
 def _log(hits, context):

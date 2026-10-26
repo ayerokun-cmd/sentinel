@@ -23,7 +23,8 @@ def cmd_update(source, domains=False):
     if domains:
         existing = url_checks.load_bad_domains()
         added = 0
-        with open(url_checks.DEFAULT_BAD_DOMAINS, "a", encoding="utf-8") as out:
+        url_checks.USER_BAD_DOMAINS.parent.mkdir(parents=True, exist_ok=True)
+        with open(url_checks.USER_BAD_DOMAINS, "a", encoding="utf-8") as out:
             for line in text.splitlines():
                 line = line.split("#", 1)[0].strip().lower()
                 if not line:
@@ -35,9 +36,10 @@ def cmd_update(source, domains=False):
                     added += 1
         print(f"Added {added} new bad domains ({len(existing)} total).")
         return
-    existing = file_scanner.load_signatures([file_scanner.DEFAULT_SIGNATURES])
+    existing = file_scanner.load_signatures([file_scanner.DEFAULT_SIGNATURES, file_scanner.USER_SIGNATURES])
     added = 0
-    with open(file_scanner.DEFAULT_SIGNATURES, "a", encoding="utf-8") as out:
+    file_scanner.USER_DIR.mkdir(parents=True, exist_ok=True)
+    with open(file_scanner.USER_SIGNATURES, "a", encoding="utf-8") as out:
         for line in text.splitlines():
             line = line.split("#", 1)[0].strip().strip('"')
             h = line.split(None, 1)[0].split(",")[0].lower() if line else ""
@@ -57,6 +59,12 @@ def _notifier(args):
 def main(argv=None):
     if platform.system() == "Windows":
         os.system("")  # enables colour output in the Windows console
+    if argv is None and len(sys.argv) == 1:
+        from . import menu   # double-clicked / no command given: show the simple menu
+        return menu.run()
+    if argv is None and len(sys.argv) == 3 and sys.argv[1] == "--menu":
+        from . import menu   # Desktop shortcut for one menu option, e.g. "Sentinel.exe --menu 1"
+        return menu.run_once(sys.argv[2])
     p = argparse.ArgumentParser(prog="sentinel",
                                 description="Scan devices for malware, web shells, phishing emails, "
                                             "bad links and weak security settings.")

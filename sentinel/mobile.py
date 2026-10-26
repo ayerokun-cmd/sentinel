@@ -10,7 +10,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from .file_scanner import DATA_DIR, load_signatures, sha256_of, DEFAULT_SIGNATURES
+from .file_scanner import DATA_DIR, load_signatures, sha256_of, DEFAULT_SIGNATURES, USER_SIGNATURES
 from .findings import Finding
 from .posture import run
 
@@ -125,7 +125,7 @@ def check_android(serial=None, deep=False):
 
 def _hash_apks(serial, packages):
     """Copy each app's APK to the computer and compare its hash to the signature list."""
-    sigs = load_signatures([DEFAULT_SIGNATURES])
+    sigs = load_signatures([DEFAULT_SIGNATURES, USER_SIGNATURES])
     f = []
     with tempfile.TemporaryDirectory() as tmp:
         for pkg in packages:
