@@ -1,0 +1,6 @@
+# SHA-256 malware signatures, one per line: <sha256> <name>
+# Add more with:  python -m sentinel update --from <file-or-url>
+# Good free sources: MalwareBazaar (abuse.ch) hash exports, VirusShare hash lists.
+
+# EICAR standard antivirus test file (harmless, used to check that scanners work)
+275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f EICAR-Test-File

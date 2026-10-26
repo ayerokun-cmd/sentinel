@@ -1,0 +1,4 @@
+# Android package names of known malware / stalkerware, one per line: <package.name> [description]
+# A maintained public list: https://github.com/AssoEchap/stalkerware-indicators (see ioc.yaml)
+# Example format:
+# com.example.badapp  Example stalkerware
