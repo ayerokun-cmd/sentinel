@@ -67,7 +67,7 @@ def main(argv=None):
         return menu.run_once(sys.argv[2])
     p = argparse.ArgumentParser(prog="sentinel",
                                 description="Scan devices for malware, web shells, phishing emails, "
-                                            "bad links and weak security settings.")
+                                            "bad links and weak security settings, and speed them up.")
     p.add_argument("--version", action="version", version=__version__)
     sub = p.add_subparsers(dest="command", required=True)
 
@@ -96,6 +96,11 @@ def main(argv=None):
     u.add_argument("source")
     u.add_argument("--domains", action="store_true", help="the source is a list of bad domains")
 
+    op = sub.add_parser("optimize", help="find what's slowing the computer, suggest fixes and apply the ones you pick")
+    op.add_argument("--report", action="store_true", help="only show the diagnosis, change nothing")
+    op.add_argument("--auto", action="store_true", help="apply only the safe fixes without asking")
+    op.add_argument("--undo", action="store_true", help="turn back on startup apps the optimizer turned off")
+
     sub.add_parser("notify-setup", help="create ~/.sentinel/config.json for alerts")
     nt = sub.add_parser("notify-test", help="send a test alert through every configured channel")
 
@@ -113,6 +118,9 @@ def main(argv=None):
     if args.command == "update":
         cmd_update(args.source, args.domains)
         return 0
+    if args.command == "optimize":
+        from . import optimizer
+        return optimizer.run(auto=args.auto, report_only=args.report, undo=args.undo)
     if args.command == "notify-setup":
         created = notify.write_default_config()
         print(("Created " if created else "Already exists: ") + str(notify.CONFIG_FILE))

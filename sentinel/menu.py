@@ -33,6 +33,7 @@ MENU = f"""
   7  Update malware lists
   8  Set up email alerts
   9  Send a test alert
+  10 Speed up this computer
   0  Exit
 """
 
@@ -136,6 +137,8 @@ def do(choice):
         _setup_email()
     elif choice == "9":
         _cli("notify-test")
+    elif choice == "10":
+        _cli("optimize")
     else:
         return False
     return True

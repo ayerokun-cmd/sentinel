@@ -32,12 +32,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install dependencies
+        run: pip install pyinstaller -r requirements.txt
       - name: Run tests
         run: python -m unittest discover tests
       - name: Build program
-        run: |
-          pip install pyinstaller
-          python build.py
+        run: python build.py
       - name: Rename for download
         shell: bash
         run: mv "dist/${{ matrix.file }}" "dist/${{ matrix.asset }}"

@@ -12,7 +12,7 @@ file for your computer and double-click it. A simple numbered menu opens, so no 
   2  Scan this computer (full, slower)   7  Update malware lists
   3  Real-time protection                8  Set up email alerts
   4  Check a link                        9  Send a test alert
-  5  Check an email file (.eml)
+  5  Check an email file (.eml)        10 Speed up this computer
 ```
 
 - **Windows:** `Sentinel-windows.exe`. If you see "Windows protected your PC", click *More info* then *Run anyway*
@@ -54,6 +54,30 @@ It also looks **inside** files:
 | **Emails** (`.eml`, `.mbox`) | Spoofed senders, failed SPF/DKIM/DMARC, mismatched Reply-To, dangerous or disguised attachments, macro documents, links whose text lies about where they go, password forms, scam wording. |
 | **Links** (in emails, `.html`, `.url` files, or checked directly) | Blocklisted domains, fake brand sites (`paypal.secure-login.xyz`), raw IP addresses, look-alike (punycode) domains, `@` tricks, shorteners, direct program downloads, logins over plain http. |
 
+## Speed up a slow computer
+
+Menu option **10** (or `python -m sentinel optimize`) checks what is slowing the computer down,
+explains it in plain language, suggests fixes and applies only the ones you pick.
+
+| It checks | It can fix |
+|---|---|
+| Processor and memory: which apps are using the most | Close a heavy app (politely first, so it can ask to save; force-close only if you agree) |
+| Disk space and old temporary files | Delete temp/cache files older than 2 days (files in use are skipped); open Storage settings or Downloads |
+| Apps that start automatically | Turn off the ones you choose (the same switch Task Manager uses). Security, driver and sync apps are labelled "better to keep" |
+| Days since last restart, updates waiting for a restart | Restart in 60 seconds (`shutdown /a` cancels) |
+| Power saver mode (Windows) | Switch to the Balanced power plan |
+| Hidden malware | Run a quick virus scan |
+
+```bash
+python -m sentinel optimize           # diagnose, then pick fixes by number
+python -m sentinel optimize --report  # diagnose only, change nothing
+python -m sentinel optimize --auto    # apply only the safe fixes, no questions
+python -m sentinel optimize --undo    # turn startup apps back on
+```
+
+Fixes that could interrupt your work (closing apps, restarting) always ask again first.
+Every change is written to `~/.sentinel/optimizer.log`.
+
 ## Alerts
 
 When something is found, Sentinel can alert you by:
@@ -79,7 +103,7 @@ stored in the file.
 
 ## Install from source (for developers)
 
-Requires Python 3.9+. No other packages are required.
+Requires Python 3.9+. Then `pip install -r requirements.txt` (adds psutil for the speed-up tool).
 
 ```bash
 git clone https://github.com/ayerokun-cmd/sentinel.git
@@ -157,6 +181,8 @@ sentinel/
   content_scanner.py PHP web shells, emails, links inside files
   url_checks.py      phishing / malicious link checks
   notify.py          desktop, webhook, email and log alerts
+  optimizer.py       speed-up tool: diagnosis and fixes
+  menu.py            double-click menu
   posture.py         Windows / macOS / Linux settings checks
   mobile.py          Android (adb) and iOS (libimobiledevice)
   report.py          terminal, JSON and HTML output
